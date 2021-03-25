@@ -14,7 +14,8 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "MIMode": "gdb",
-            "miDebuggerPath": "${workspaceFolder}/gdb.sh",
+            "miDebuggerPath": "${workspaceFolder}/scripts/gdb.sh", // Run as root
+            // "miDebuggerPath": "/usr/bin/gdb",
             "externalConsole": false,
             "setupCommands": [
                 {

@@ -1,6 +1,5 @@
 {
     "files.associations": {
-        "*.edf": "html",
         "cstdlib": "cpp",
         "stdio.h": "c",
         "netdb.h": "c",
