@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "gcc - Build and debug active file",
+            "name": "Debug Main",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/out/main",
@@ -13,8 +13,9 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": false,
             "MIMode": "gdb",
+            "miDebuggerPath": "${workspaceFolder}/gdb.sh",
+            "externalConsole": false,
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
@@ -23,7 +24,6 @@
                 }
             ],
             "preLaunchTask": "Build Project",
-            "miDebuggerPath": "/usr/bin/gdb"
         }
     ]
 }

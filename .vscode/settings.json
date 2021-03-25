@@ -3,6 +3,9 @@
         "*.edf": "html",
         "cstdlib": "cpp",
         "stdio.h": "c",
-        "netdb.h": "c"
+        "netdb.h": "c",
+        "cstdint": "cpp",
+        "typeinfo": "c",
+        "*.tcc": "c"
     }
 }
