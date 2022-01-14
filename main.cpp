@@ -27,9 +27,11 @@ void SignalHandler(i32 _signal)
 
 void PrintBytes(constptr uchar *_bytes, ptr_size _len)
 {
+    core::PrintF("[ ");
     for (ptr_size i = 0; i < _len; i++) {
         core::PrintF("0x%x ", _bytes[i]);
     }
+    core::PrintF("]\n");
 }
 
 // struct iphdr {
@@ -71,9 +73,7 @@ i32 main(i32 argc, constptr char *argv[], constptr char *envp[])
         }
 
         core::PrintF("read %ld bytes\n", rRes);
-        core::PrintF("[ ");
         PrintBytes(buf, (ptr_size)rRes);
-        core::PrintF("]\n");
     }
 
     close(nic);
