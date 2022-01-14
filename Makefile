@@ -1,40 +1,42 @@
-CC := gcc
-OUTDIR := out
+CC            = g++
+COMMON_CFLAGS = -ggdb -std=c++17 -Wno-unknown-pragmas
+CFLAGS        = $(COMMON_CFLAGS) -O0 -g -Wall -Wno-unused
+DEBUG_DEFINES = -DDEBUG=1
+SRC           = main.cpp $(shell find ./src/ -name "*.cpp")
+CORE_LIB_SRC  = $(shell find ./libs/core/src -name "*.cpp")
+OUT_DIR       = build
+BIN_NAME      = main
 
-## HELPERS
+# HELPER TARGETS
+
 .PHONY: help
 help:
-	@echo Supported targets
-	@cat $(MAKEFILE_LIST) | grep -e "^[\.a-zA-Z0-9_-]*: *.*## *" | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-35s\033[0m %s\n", $$1, $$2}'
+	@echo Supported targets:
+	@cat $(MAKEFILE_LIST) | grep -e "^[\.a-zA-Z0-9_-]*: *.*## *" | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-35s\033[0m %s\n", $$1, $$2}'
 
 .DEFAULT_GOAL := help
 
-## TARGETS
-build: clean ## build command
-	$(CC) -g $(FLAGS) main.c -o $(OUTDIR)/main
+# TARGETS:
+
+.PHONY: build
+build: ## Build the project in the build folder. Creates ./build folder if it does not exist.
+	mkdir -p $(OUT_DIR)
+	$(CC) $(CFLAGS) $(DEBUG_DEFINES) -o $(OUT_DIR)/$(BIN_NAME) $(SRC) $(CORE_LIB_SRC)
 
 .PHONY: run
-run: build ## build and run post build
-	(OUTDIR=${OUTDIR} \
-		scripts/quick_run.sh)
+run: build ## build and run post build.
+	(OUT_DIR=${OUT_DIR} scripts/quick_run.sh)
 
-build_no_stdlib: clean ## build without using stdlib
-	$(CC) -g -nostdlib stubstart.S -o $(OUTDIR)/main main.c
+.PHONY: generate_asm
+generate_asm: ## Uses objdump -S to generate asm from the binary. Expects the output binaries to be generated first by other make targets.
+	objdump -M intel -S $(OUT_DIR)/$(BIN_NAME) > $(OUT_DIR)/$(BIN_NAME).S
 
-# Don't forget to stop any running VPN serverce that uses a tun tap device!
-post_build: ## setup tun0 interface with IP 192.168.0.1/24
-	sudo setcap cap_net_admin=eip ${OUTDIR}/main
-	sudo ip addr add 192.168.0.1/24 dev tun0
-	sudo ip link set up dev tun0
+.PHONY: clean
+clean: ## Deletes the build folder.
+	rm -rf $(OUT_DIR)
 
-ping: ## ping some address on tun0 interface
-	ping -I tun0 192.168.0.2
+# TUN TARGETS:
 
-del_tun_interface: ## delete the created tun0 interface
+del_tun_interface: ## delete the created tun0 interface. In case the tun device was not destroyed properly.
 	sudo ip link delete tun0
-
-tshark_on_tun0: ## sniff and parse the traffinc on tun0 interface
-	sudo tshark -i tun0
-
-clean: ## clean the generated build files
-	rm -rf $(OUTDIR)/*

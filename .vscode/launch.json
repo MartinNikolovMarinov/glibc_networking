@@ -8,7 +8,7 @@
             "name": "Debug Main",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/out/main",
+            "program": "${workspaceFolder}/build/main",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

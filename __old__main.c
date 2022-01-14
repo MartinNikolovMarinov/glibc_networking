@@ -46,6 +46,7 @@ void on_sigint(int signo) {
     }
     exit(signo);
 }
+
 struct iphdr {
     uint8_t version : 4; // 4 this specifies the size in bits (NOT bytes!)
     uint8_t ihl : 4;
