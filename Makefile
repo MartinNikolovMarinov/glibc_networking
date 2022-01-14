@@ -7,7 +7,7 @@ CORE_LIB_SRC  = $(shell find ./libs/core/src -name "*.cpp")
 OUT_DIR       = build
 BIN_NAME      = main
 
-# HELPER TARGETS
+# HELP TARGET:
 
 .PHONY: help
 help:
@@ -17,7 +17,7 @@ help:
 
 .DEFAULT_GOAL := help
 
-# TARGETS:
+# MAIN TARGETS:
 
 .PHONY: build
 build: ## Build the project in the build folder. Creates ./build folder if it does not exist.
@@ -36,7 +36,22 @@ generate_asm: ## Uses objdump -S to generate asm from the binary. Expects the ou
 clean: ## Deletes the build folder.
 	rm -rf $(OUT_DIR)
 
-# TUN TARGETS:
+# UTIL TARGETS:
 
+.PHONY: post_debug_run
+post_debug_run: ## specifically implemented because VS Code can't be botherd to run shell scripts on launch.
+	sudo setcap cap_net_admin=eip ${OUT_DIR}/main
+	sudo ip addr add 192.168.0.1/24 dev tun0
+	sudo ip link set up dev tun0
+
+.PHONY: ping
+ping: ## test ping the tun0 interface on some IP address on 192.168.0.2
+	ping -I tun0 192.168.0.2
+
+.PHONY: sniff
+sniff: ## sniff traffic to tun0 with tshark.
+	sudo tshark -i tun0
+
+.PHONY: del_tun_interface
 del_tun_interface: ## delete the created tun0 interface. In case the tun device was not destroyed properly.
 	sudo ip link delete tun0

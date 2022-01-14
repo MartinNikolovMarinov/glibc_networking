@@ -20,11 +20,11 @@ namespace tun
 /**
  * \brief Open a TUN device that emulates a network inside user space.
  *
- * \param devname is the name of the device. Should be "tun0", "tun1" ... "tunXX".
+ * \param _devname is the name of the device. Should be "tun0", "tun1" ... "tunXX".
  *
  * \returns returns an Optional with the file descriptor of the tun device.
 */
-Optional<i32> TUNOpen(constptr char *devname);
+Optional<i32> TUNOpen(constptr char *_devname);
 
 } // namespace tun
 
