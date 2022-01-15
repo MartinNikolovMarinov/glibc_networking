@@ -4,15 +4,15 @@
 #include "../libs/core/src/core.h"
 #include "../libs/core/src/types.h"
 
+#include "net.h"
+
 #include <linux/if.h>
 #include <linux/if_tun.h>
 
 #include <sys/ioctl.h>
 
 #include <errno.h>
-#include <fcntl.h>
 #include <string.h>
-#include <unistd.h>
 
 namespace tun
 {
@@ -25,6 +25,12 @@ namespace tun
  * \returns returns an Optional with the file descriptor of the tun device.
 */
 Optional<i32> TUNOpen(constptr char *_devname);
+
+struct TunTapFrame {
+    u16 Flags;                  // ioctl tun/tap flags.
+    net::EtherType Protocol;    // Frame protocol.
+    void *FrameData;            // Raw data IPv4, IPv6, ARP, etc.
+};
 
 } // namespace tun
 

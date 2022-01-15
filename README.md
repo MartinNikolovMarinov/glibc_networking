@@ -20,6 +20,7 @@ This project was created for educational purpose. The main goal is to explore lo
 # Requirements
 
 1. Any modern Linux OS.
+2. Root privileges.
 
 # TUN/TAP device driver description.
 

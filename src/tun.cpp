@@ -3,18 +3,11 @@
 namespace tun
 {
 
-/**
- * \brief Open a TUN device that emulates a network inside user space.
- *
- * \param _devname is the name of the device. Should be "tun0", "tun1" ... "tunXX".
- *
- * \returns returns an Optional with the file descriptor of the tun device.
-*/
 Optional<i32> TUNOpen(constptr char *_devname)
 {
     Assert(_devname != NULL);
 
-    i32 tunFd = open("/dev/net/tun", O_RDWR);
+    i32 tunFd = TryOrReturn(core::OsOpen("/dev/net/tun", core::OpenFlag::READ_WRITE));
     if (tunFd < 0) {
         return Optional<i32>(tunFd, strerror(errno));
     }
