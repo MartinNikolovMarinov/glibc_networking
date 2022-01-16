@@ -12,7 +12,7 @@ void SignalHandler(i32 _signal)
         core::OsClose(nic);
     }
     core::OsExit(_signal);
-};
+}
 
 void PrintBytes(constptr u8 *_bytes, ptr_size _len)
 {
@@ -23,20 +23,52 @@ void PrintBytes(constptr u8 *_bytes, ptr_size _len)
     core::PrintF("]");
 }
 
-// struct iphdr {
-//     uint8_t version : 4; // 4 this specifies the size in bits (NOT bytes!)
-//     uint8_t ihl : 4;
-//     uint8_t tos;
-//     uint16_t len;
-//     uint16_t id;
-//     uint16_t flags : 3;
-//     uint16_t frag_offset : 13;
-//     uint8_t ttl;
-//     uint8_t proto;
-//     uint16_t csum;
-//     uint32_t saddr;
-//     uint32_t daddr;
-// } __attribute__((packed));
+// TODO: Move IP Header parsing to net and test it.
+// TODO: Implement TCP Header parsing in net and test it.
+
+Optional<i32> ParseIPv4Header(u8 *_rawData, net::IPv4Header *_header)
+{
+    Assert(_rawData != null);
+    Assert(_header != null);
+
+    _header->Version = _rawData[0] >> 4;
+    if (_header->Version != 4) {
+        // expected version to equal 4
+        return Optional<i32>((u32)core::ErrCodes::ERROR, "invalid IP version");
+    }
+    _header->InternetHeaderLength = _rawData[0] & 0xf;
+    if (_header->InternetHeaderLength < 5) {
+        // expect length to at minimum 5.
+        return Optional<i32>((u32)core::ErrCodes::ERROR, "invalid internet header length");
+    }
+    _rawData += sizeof(u8);
+
+    _header->TypeOfService = _rawData[0];
+    _rawData += sizeof(u8);
+
+    _header->TotalLength = core::SwapByteOrderU16(*(u16*)_rawData);
+    _rawData += sizeof(u16);
+
+    _header->Id = core::SwapByteOrderU16(*(u16*)_rawData);
+    _rawData += sizeof(u16);
+
+    // TODO: skiping flags.
+    _rawData += sizeof(u16);
+
+    _header->Ttl = _rawData[0];
+    _rawData += sizeof(u8);
+
+    _header->HeaderChecksum = core::SwapByteOrderU16(*(u16*)_rawData);
+    _rawData += sizeof(u16);
+
+    _header->SourceAddres = core::SwapByteOrderU32(*(u32*)_rawData);
+    _rawData += sizeof(u32);
+
+    _header->DestAddres = core::SwapByteOrderU32(*(u32*)_rawData);
+    _rawData += sizeof(u32);
+
+    return Optional<i32>((u32)core::ErrCodes::OK, null);
+}
 
 i32 main(i32 argc, constptr char *argv[], constptr char *envp[])
 {
@@ -65,12 +97,21 @@ i32 main(i32 argc, constptr char *argv[], constptr char *envp[])
             // Set frame data past the 2 bytes of protocol data:
             ethFrame.Data = buf + 2*sizeof(u16);
 
-            // Print received data:
+            // TODO: Remove debug print. Print received data:
             PrintBytes(ethFrame.Data, (ptr_size)recvBytes);
             core::PrintF("\n");
 
-            // TODO: Implement IP protocol parsing...
+            net::IPv4Header header;
+            Optional<i32> parseResOpt = ParseIPv4Header(ethFrame.Data, &header);
+            if (parseResOpt.err != null) {
+                core::PrintF("failed to parse ipv4 header: ");
+                core::PrintF(parseResOpt.err);
+                core::PrintF("\n");
+                continue;
+            }
 
+            core::PrintF("source address: %u, dest address: %u\n",
+                        header.SourceAddres, header.DestAddres);
         } else {
             // Can't handle protocol.
             core::PrintF("Unknown protocol.\n");
