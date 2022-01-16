@@ -3,9 +3,9 @@
 namespace net
 {
 
-constptr char* EtherTypeToCharPtr(EtherType e)
+constptr char* EtherTypeToCharPtr(EtherType _e)
 {
-    switch (e)
+    switch (_e)
     {
         case EtherType::IPv4:   return "IPv4";
         case EtherType::IPv6:   return "IPv6";

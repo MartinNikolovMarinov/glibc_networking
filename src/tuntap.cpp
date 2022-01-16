@@ -1,13 +1,14 @@
-#include "tun.h"
+#include "tuntap.h"
 
-namespace tun
+namespace tuntap
 {
 
 Optional<i32> TUNOpen(constptr char *_devname)
 {
     Assert(_devname != NULL);
 
-    i32 tunFd = TryOrReturn(core::OsOpen("/dev/net/tun", core::OpenFlag::READ_WRITE));
+    i32 tunFd = TryOrReturn(core::OsOpen("/dev/net/tun",
+                            core::OpenFlag::READ_WRITE));
     if (tunFd < 0) {
         return Optional<i32>(tunFd, strerror(errno));
     }

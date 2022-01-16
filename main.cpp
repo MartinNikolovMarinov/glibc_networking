@@ -1,12 +1,6 @@
 #include "libs/core/src/core.h"
-#include "src/tun.h"
+#include "src/tuntap.h"
 #include "src/net.h"
-
-#include <arpa/inet.h>
-
-// #include <linux/if.h>
-// #include <linux/if_tun.h>
-#include <linux/if_ether.h>
 
 #include <signal.h>
 
@@ -48,7 +42,7 @@ i32 main(i32 argc, constptr char *argv[], constptr char *envp[])
 {
     signal(SIGINT, SignalHandler);
 
-    nic = TryOrFail(tun::TUNOpen("tun0"));
+    nic = TryOrFail(tuntap::TUNOpen("tun0"));
     const int bufSize = 1504;
     uchar buf[bufSize] = {};
 
@@ -60,19 +54,28 @@ i32 main(i32 argc, constptr char *argv[], constptr char *envp[])
         }
         signed_ptr_size recvBytes = readRes.val;
 
-        tun::TunTapFrame frame;
-        frame.Flags = ntohs(*(u16 *)(buf));
-        frame.Protocol = (net::EtherType)ntohs(*(u16 *)(buf + sizeof(u16)));
+        tuntap::TunEthFrame ethFrame;
+        ethFrame.Flags = core::SwapByteOrderU16(*(u16 *)(buf));
+        ethFrame.Protocol = core::SwapByteOrderU16(*(u16 *)(buf + sizeof(u16)));
         core::PrintF("bytes received: %llu, flags: %d, protocol: %s\n",
-            recvBytes, frame.Flags, net::EtherTypeToCharPtr(frame.Protocol));
-        if (frame.Protocol != net::EtherType::IPv4) {
-            // This means it's not IPv4
+                        recvBytes, ethFrame.Flags,
+                        net::EtherTypeToCharPtr((net::EtherType)ethFrame.Protocol));
+
+        if (ethFrame.Protocol == (u16)net::EtherType::IPv4) {
+            // Set frame data past the 2 bytes of protocol data:
+            ethFrame.Data = buf + 2*sizeof(u16);
+
+            // Print received data:
+            PrintBytes(ethFrame.Data, (ptr_size)recvBytes);
+            core::PrintF("\n");
+
+            // TODO: Implement IP protocol parsing...
+
+        } else {
+            // Can't handle protocol.
+            core::PrintF("Unknown protocol.\n");
             continue;
         }
-        frame.FrameData = buf + 2*sizeof(u16);
-
-        PrintBytes((constptr u8*)frame.FrameData, (ptr_size)recvBytes);
-        core::PrintF("\n");
     }
 
     core::OsClose(nic);

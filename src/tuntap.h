@@ -1,5 +1,5 @@
-#ifndef TUN_H
-#define TUN_H 1
+#ifndef TUN_TAP_H
+#define TUN_TAP_H 1
 
 #include "../libs/core/src/core.h"
 #include "../libs/core/src/types.h"
@@ -14,7 +14,7 @@
 #include <errno.h>
 #include <string.h>
 
-namespace tun
+namespace tuntap
 {
 
 /**
@@ -26,10 +26,10 @@ namespace tun
 */
 Optional<i32> TUNOpen(constptr char *_devname);
 
-struct TunTapFrame {
-    u16 Flags;                  // ioctl tun/tap flags.
-    net::EtherType Protocol;    // Frame protocol.
-    void *FrameData;            // Raw data IPv4, IPv6, ARP, etc.
+struct TunEthFrame {
+    u16 Flags;    // ioctl tun/tap flags.
+    u16 Protocol; // Frame protocol.
+    u8 *Data;     // Raw data IPv4, IPv6, ARP, etc.
 };
 
 } // namespace tun
